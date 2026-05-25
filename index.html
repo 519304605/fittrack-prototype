@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FitTrack 健身打卡 App 界面原型展示">
+  <title>FitTrack 健身打卡App界面原型</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+  // Tailwind 自定义主题：黑白主色 + 橙/绿点缀
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          accent: { orange: '#F97316', green: '#22C55E' }
+        },
+        fontFamily: {
+          sans: ['"PingFang SC"', '"Microsoft YaHei"', 'system-ui', 'sans-serif']
+        }
+      }
+    }
+  }
+  </script>
+
+  <style>
+    /* 全局平滑滚动 */
+    html { scroll-behavior: smooth; }
+
+    /* 顶部导航占位，避免 fixed 遮挡内容 */
+    body { padding-top: 4.5rem; }
+
+    /* 图片卡片悬浮动效 */
+    .screen-card {
+      transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+    .screen-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    /* 图片容器：保持比例，不拉伸变形 */
+    .screen-card img {
+      object-fit: contain;
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #fafafa;
+    }
+
+    /* 全屏预览遮罩 */
+    .lightbox {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .lightbox.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* 预览图淡入 */
+    .lightbox-img {
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* 导航栏底部装饰线（橙绿渐变点缀） */
+  .nav-accent {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #F97316 30%, #22C55E 70%, transparent);
+    }
+  </style>
+</head>
+<body class="bg-white text-gray-900 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- ========== 顶部固定导航栏 ========== -->
+  <header class="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <h1 class="text-center text-base sm:text-lg md:text-xl font-semibold tracking-wide text-gray-900">
+        FitTrack 健身打卡App界面原型
+      </h1>
+    </div>
+    <div class="nav-accent"></div>
+  </header>
+
+  <!-- ========== 主体：响应式图片网格 ========== -->
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <p class="text-center text-gray-500 text-sm mb-8 sm:mb-12">
+      共 5 个界面 · 点击可全屏预览 · 支持键盘 ← → 切换
+    </p>
+
+    <!--
+      网格布局说明：
+      - 移动端：1 列
+      - 平板：2 列
+      - 桌面：3 列（5 张图自然排列）
+    -->
+    <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+      <!-- 1. 启动页 -->
+      <article class="screen-card cursor-pointer rounded-2xl overflow-hidden border border-gray-100 bg-white"
+               data-index="0" tabindex="0" role="button" aria-label="查看启动页">
+        <div class="aspect-[9/19] overflow-hidden">
+          <img
+            src="images/01-splash.png"
+            alt="FitTrack 启动页"
+            loading="lazy"
+            decoding="async"
+            class="w-full h-full"
+          >
+        </div>
+        <p class="text-center text-xs sm:text-sm text-gray-500 py-3 border-t border-gray-50">
+          启动页 / 闪屏页
+        </p>
+      </article>
+
+      <!-- 2. 登录页 -->
+      <article class="screen-card cursor-pointer rounded-2xl overflow-hidden border border-gray-100 bg-white"
+               data-index="1" tabindex="0" role="button" aria-label="查看登录页">
+        <div class="aspect-[9/19] overflow-hidden">
+          <img
+            src="images/02-login.png"
+            alt="FitTrack 登录页"
+            loading="lazy"
+            decoding="async"
+            class="w-full h-full"
+          >
+        </div>
+        <p class="text-center text-xs sm:text-sm text-gray-500 py-3 border-t border-gray-50">
+          登录页
+        </p>
+      </article>
+
+      <!-- 3. 首页 -->
+      <article class="screen-card cursor-pointer rounded-2xl overflow-hidden border border-gray-100 bg-white"
+               data-index="2" tabindex="0" role="button" aria-label="查看首页">
+        <div class="aspect-[9/19] overflow-hidden">
+          <img
+            src="images/03-home.png"
+            alt="FitTrack 首页"
+            loading="lazy"
+            decoding="async"
+            class="w-full h-full"
+          >
+        </div>
+        <p class="text-center text-xs sm:text-sm text-gray-500 py-3 border-t border-gray-50">
+          首页
+        </p>
+      </article>
+
+      <!-- 4. 训练页 -->
+      <article class="screen-card cursor-pointer rounded-2xl overflow-hidden border border-gray-100 bg-white"
+               data-index="3" tabindex="0" role="button" aria-label="查看训练页">
+        <div class="aspect-[9/19] overflow-hidden">
+          <img
+            src="images/04-training.png"
+            alt="FitTrack 训练页"
+            loading="lazy"
+            decoding="async"
+            class="w-full h-full"
+          >
+        </div>
+        <p class="text-center text-xs sm:text-sm text-gray-500 py-3 border-t border-gray-50">
+          训练页
+        </p>
+      </article>
+
+      <!-- 5. 个人中心页 -->
+      <article class="screen-card cursor-pointer rounded-2xl overflow-hidden border border-gray-100 bg-white sm:col-span-2 lg:col-span-1"
+               data-index="4" tabindex="0" role="button" aria-label="查看个人中心页">
+        <div class="aspect-[9/19] overflow-hidden max-w-xs mx-auto sm:max-w-none">
+          <img
+            src="images/05-profile.png"
+            alt="FitTrack 个人中心页"
+            loading="lazy"
+            decoding="async"
+            class="w-full h-full"
+          >
+        </div>
+        <p class="text-center text-xs sm:text-sm text-gray-500 py-3 border-t border-gray-50">
+          个人中心页
+        </p>
+      </article>
+    </div>
+  </main>
+
+  <!-- ========== 底部说明区 ========== -->
+  <footer class="border-t border-gray-100 bg-gray-50/80 py-8 sm:py-10 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <p class="text-sm sm:text-base text-gray-600 tracking-wide">
+        每日打卡，遇见更好的自己
+        <span class="inline-block mx-2 text-accent-orange">|</span>
+        界面原型展示
+      </p>
+      <p class="mt-2 text-xs text-gray-400">FitTrack © 2024</p>
+    </div>
+  </footer>
+
+  <!-- ========== 全屏预览 Lightbox ========== -->
+  <div id="lightbox"
+       class="lightbox fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+       aria-hidden="true" role="dialog" aria-modal="true" aria-label="图片预览">
+    <!-- 关闭按钮 -->
+    <button id="lb-close"
+            class="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl transition-colors"
+            aria-label="关闭预览">&times;</button>
+
+    <!-- 上一张 -->
+    <button id="lb-prev"
+            class="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xl sm:text-2xl transition-colors"
+            aria-label="上一张">&#8249;</button>
+
+    <!-- 预览图片 -->
+    <div class="relative max-w-[90vw] max-h-[85vh] flex flex-col items-center px-14 sm:px-20">
+      <img id="lb-img" src="" alt="" class="lightbox-img max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl">
+      <p id="lb-caption" class="mt-4 text-white/80 text-sm sm:text-base text-center"></p>
+      <p id="lb-counter" class="mt-1 text-white/50 text-xs"></p>
+    </div>
+
+    <!-- 下一张 -->
+    <button id="lb-next"
+            class="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xl sm:text-2xl transition-colors"
+            aria-label="下一张">&#8250;</button>
+  </div>
+
+  <!-- ========== 交互脚本 ========== -->
+  <script>
+  (function () {
+    'use strict';
+
+    // 界面数据：可按需修改标题
+    var SCREENS = [
+      { src: 'images/01-splash.png',  alt: 'FitTrack 启动页',     caption: '启动页 / 闪屏页' },
+      { src: 'images/02-login.png',   alt: 'FitTrack 登录页',     caption: '登录页' },
+      { src: 'images/03-home.png',    alt: 'FitTrack 首页',       caption: '首页' },
+      { src: 'images/04-training.png',alt: 'FitTrack 训练页',     caption: '训练页' },
+      { src: 'images/05-profile.png', alt: 'FitTrack 个人中心页', caption: '个人中心页' }
+    ];
+
+    var currentIndex = 0;
+    var lightbox   = document.getElementById('lightbox');
+    var lbImg      = document.getElementById('lb-img');
+    var lbCaption  = document.getElementById('lb-caption');
+    var lbCounter  = document.getElementById('lb-counter');
+    var cards      = document.querySelectorAll('.screen-card');
+
+    /** 打开全屏预览 */
+    function openLightbox(index) {
+      currentIndex = index;
+      updateLightbox();
+      lightbox.classList.add('active');
+      lightbox.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    /** 关闭全屏预览 */
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      lightbox.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    /** 更新预览内容 */
+    function updateLightbox() {
+      var item = SCREENS[currentIndex];
+      lbImg.src = item.src;
+      lbImg.alt = item.alt;
+      lbCaption.textContent = item.caption;
+      lbCounter.textContent = (currentIndex + 1) + ' / ' + SCREENS.length;
+      // 触发淡入动画
+      lbImg.classList.remove('lightbox-img');
+      void lbImg.offsetWidth;
+      lbImg.classList.add('lightbox-img');
+    }
+
+    /** 切换上一张 / 下一张 */
+    function prev() { currentIndex = (currentIndex - 1 + SCREENS.length) % SCREENS.length; updateLightbox(); }
+    function next() { currentIndex = (currentIndex + 1) % SCREENS.length; updateLightbox(); }
+
+    // 点击卡片打开预览
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        openLightbox(parseInt(card.dataset.index, 10));
+      });
+      card.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openLightbox(parseInt(card.dataset.index, 10));
+        }
+      });
+    });
+
+    // 按钮事件
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+    document.getElementById('lb-prev').addEventListener('click', function (e) { e.stopPropagation(); prev(); });
+    document.getElementById('lb-next').addEventListener('click', function (e) { e.stopPropagation(); next(); });
+
+    // 点击遮罩关闭（点击图片本身不关闭）
+    lightbox.addEventListener('click', function (e) {
+      if (e.target === lightbox) closeLightbox();
+    });
+
+    // 键盘导航：Esc 关闭，← → 切换
+    document.addEventListener('keydown', function (e) {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape')     closeLightbox();
+      if (e.key === 'ArrowLeft')  prev();
+      if (e.key === 'ArrowRight') next();
+    });
+
+    // 触摸滑动切换（移动端）
+    var touchStartX = 0;
+    lightbox.addEventListener('touchstart', function (e) {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    lightbox.addEventListener('touchend', function (e) {
+      var diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) < 50) return;
+      diff > 0 ? prev() : next();
+    }, { passive: true });
+  })();
+  </script>
+</body>
+</html>
