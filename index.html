@@ -3,606 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="FitTrack 健身打卡 App 高保真原型">
+  <meta name="description" content="FitTrack 健身打卡 App - Visily 原型高保真展示">
   <title>FitTrack</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          brand: { orange: '#F97316', green: '#22C55E', blue: '#3B82F6', purple: '#A855F7' }
-        },
-        fontFamily: {
-          sans: ['"PingFang SC"', '"Microsoft YaHei"', 'system-ui', '-apple-system', 'sans-serif']
-        },
-        boxShadow: {
-          phone: '0 25px 50px -12px rgba(0,0,0,0.18)',
-          card: '0 1px 3px rgba(0,0,0,0.06)'
-        }
-      }
-    }
-  }
-  </script>
   <style>
     html { scroll-behavior: smooth; }
-    body { background: #f0f0f0; }
+    body { background: #ebebeb; margin: 0; }
 
-    /* 页面切换动画 */
-    .page { display: none; opacity: 0; transform: translateY(8px); transition: opacity .35s ease, transform .35s ease; }
-    .page.active { display: flex; opacity: 1; transform: translateY(0); }
+    /* 页面切换：淡入 + 轻微上移 */
+    .page {
+      display: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .page.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-    /* 按钮微交互 */
-    .btn-primary { transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
-    .btn-primary:active { transform: scale(.98); box-shadow: none; }
-    .btn-outline { transition: transform .15s ease, background .15s ease; }
-    .btn-outline:hover { background: #f9fafb; }
-    .btn-outline:active { transform: scale(.98); }
+    /* 截图铺满手机框，不拉伸变形 */
+    .screen-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
 
-    /* 卡片悬浮 */
-    .workout-card { transition: transform .2s ease, box-shadow .2s ease; }
-    .workout-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
-    .workout-card:active { transform: scale(.99); }
-
-    /* 底部导航 */
-    .nav-item { transition: color .2s ease, transform .15s ease; }
-    .nav-item:active { transform: scale(.92); }
-
-    /* 分类标签 */
-    .chip { transition: all .2s ease; }
-    .chip:active { transform: scale(.96); }
-
-    /* 菜单行 */
-    .menu-row { transition: background .15s ease; }
-    .menu-row:hover { background: #fafafa; }
-    .menu-row:active { background: #f3f4f6; }
-
-    /* 启动页 logo 淡入 */
-    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-    .splash-logo { animation: fadeUp .8s ease forwards; }
-    .splash-text { animation: fadeUp .8s .3s ease forwards; opacity: 0; }
-
-    /* 进度环 */
-    .progress-ring { stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 1s ease; }
-
-    /* 隐藏滚动条 */
-    .hide-scroll::-webkit-scrollbar { display: none; }
-    .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* 密码可见切换 */
-    input:focus { outline: none; }
+    /* 透明热区：hover 微反馈 */
+    .hotspot {
+      position: absolute;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .hotspot:hover { background: rgba(0,0,0,0.04); }
+    .hotspot:active { background: rgba(0,0,0,0.08); }
   </style>
 </head>
 <body class="min-h-screen flex items-start sm:items-center justify-center py-0 sm:py-8 font-sans antialiased">
 
-  <!-- App 容器：桌面端模拟手机框，移动端全屏 -->
-  <div id="app" class="relative w-full max-w-[390px] min-h-screen sm:min-h-[844px] sm:h-[844px] bg-white sm:rounded-[2.5rem] sm:shadow-phone overflow-hidden flex flex-col">
+  <!--
+    FitTrack 原型展示
+    视觉层：直接使用 Visily 导出的 5 张截图，保证 1:1 还原
+    交互层：透明热区覆盖可点击按钮/导航
+  -->
+  <div id="app" class="relative w-full max-w-[390px] h-[100dvh] sm:h-[844px] sm:rounded-[2.5rem] overflow-hidden bg-white sm:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.18)]">
 
-    <!-- ========== 状态栏（所有页面共用） ========== -->
-    <div id="status-bar" class="flex items-center justify-between px-6 pt-3 pb-1 text-[13px] font-semibold text-black shrink-0">
-      <span>9:41</span>
-      <div class="flex items-center gap-1">
-        <!-- 信号 -->
-        <svg width="17" height="12" viewBox="0 0 17 12" fill="black"><rect x="0" y="8" width="3" height="4" rx=".5"/><rect x="4.5" y="5" width="3" height="7" rx=".5"/><rect x="9" y="2" width="3" height="10" rx=".5"/><rect x="13.5" y="0" width="3" height="12" rx=".5" opacity=".3"/></svg>
-        <!-- WiFi -->
-        <svg width="16" height="12" viewBox="0 0 16 12" fill="black"><path d="M8 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/><path d="M3.5 5.5a7 7 0 019 0" stroke="black" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M1 3a11 11 0 0114 0" stroke="black" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".4"/></svg>
-        <!-- 电池 -->
-        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="2.5" stroke="black" stroke-opacity=".35"/><rect x="2" y="2" width="17" height="8" rx="1.5" fill="black"/><path d="M23 4.5v3a1.5 1.5 0 000-3z" fill="black" opacity=".4"/></svg>
-      </div>
+    <!-- ========== 1. 启动页 / 闪屏页 ========== -->
+    <div id="page-splash" class="page active relative w-full h-full">
+      <img src="screens/01-splash.png" alt="启动页" class="screen-img" loading="eager">
+      <!-- 点击任意区域跳过 -->
+      <button class="hotspot inset-0 w-full h-full" aria-label="进入登录页" data-go="login"></button>
     </div>
 
-    <!-- ==================== 1. 启动页 ==================== -->
-    <div id="page-splash" class="page active flex-col flex-1 cursor-pointer bg-[#F8F9FA]">
-      <div class="flex-1 flex flex-col items-center justify-center px-8">
-        <!-- Logo：黑色圆角方块 + 闪电 -->
-        <div class="splash-logo w-[88px] h-[88px] bg-black rounded-[22px] flex items-center justify-center shadow-lg">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>
-        </div>
-      </div>
-      <div class="splash-text pb-16 flex flex-col items-center gap-4">
-        <div class="w-8 h-px bg-gray-300"></div>
-        <p class="text-sm text-gray-500 tracking-wide">每日打卡，遇见更好的自己</p>
-      </div>
+    <!-- ========== 2. 登录页 ========== -->
+    <div id="page-login" class="page relative w-full h-full">
+      <img src="screens/02-login.png" alt="登录页" class="screen-img" loading="lazy">
+      <!-- 「登录」按钮热区（按截图比例定位） -->
+      <button class="hotspot left-[6%] right-[6%] top-[44%] h-[5.5%] rounded-xl" aria-label="登录" data-go="home"></button>
     </div>
 
-    <!-- ==================== 2. 登录页 ==================== -->
-    <div id="page-login" class="page flex-col flex-1 overflow-y-auto hide-scroll px-6 pb-8">
-      <!-- Logo + 标语 -->
-      <div class="flex flex-col items-center pt-6 pb-8">
-        <div class="w-[72px] h-[72px] bg-black rounded-full flex items-center justify-center mb-4">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>
-        </div>
-        <p class="text-sm text-gray-500">每日打卡，遇见更好的自己</p>
-      </div>
-
-      <!-- 表单 -->
-      <div class="space-y-5">
-        <!-- 手机号 -->
-        <div>
-          <label class="text-xs text-gray-700 mb-1.5 block">手机号码</label>
-          <div class="flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 bg-white focus-within:border-gray-400 transition-colors">
-            <svg class="text-gray-400 shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-            <input type="tel" placeholder="请输入您的手机号" class="flex-1 text-sm bg-transparent placeholder:text-gray-400">
-          </div>
-        </div>
-        <!-- 密码 -->
-        <div>
-          <div class="flex justify-between items-center mb-1.5">
-            <label class="text-xs text-gray-700">登录密码</label>
-            <button class="text-xs text-gray-500 hover:text-black transition-colors">忘记密码?</button>
-          </div>
-          <div class="flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 bg-white focus-within:border-gray-400 transition-colors">
-            <svg class="text-gray-400 shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-            <input id="pwd-input" type="password" placeholder="请输入密码" class="flex-1 text-sm bg-transparent placeholder:text-gray-400">
-            <button id="pwd-toggle" class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="切换密码可见">
-              <svg id="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-              <svg id="eye-on" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 按钮 -->
-      <div class="mt-6 space-y-3">
-        <button id="btn-login" class="btn-primary w-full bg-black text-white text-sm font-medium py-3.5 rounded-xl">登录</button>
-        <button class="btn-outline w-full border border-gray-300 text-black text-sm font-medium py-3.5 rounded-xl">注册</button>
-      </div>
-
-      <!-- 第三方登录 -->
-      <div class="mt-8">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="flex-1 h-px bg-gray-200"></div>
-          <span class="text-xs text-gray-400 whitespace-nowrap">使用其他方式登录</span>
-          <div class="flex-1 h-px bg-gray-200"></div>
-        </div>
-        <div class="flex justify-center gap-12">
-          <button class="flex flex-col items-center gap-2 group">
-            <div class="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-green-400 transition-colors">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#07C160"><path d="M8.5 7.5C7.1 7.5 6 8.4 6 9.5c0 1.1 1.1 2 2.5 2s2.5-.9 2.5-2-1.1-2-2.5-2zm7 0c-1.4 0-2.5.9-2.5 2s1.1 2 2.5 2 2.5-.9 2.5-2-1.1-2-2.5-2zM12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.6 6.7L5 21l4.1-2.1c.9.2 1.9.4 2.9.4 5.5 0 10-3.9 10-8.7S17.5 2 12 2z"/></svg>
-            </div>
-            <span class="text-xs text-gray-500">微信登录</span>
-          </button>
-          <button class="flex flex-col items-center gap-2 group">
-            <div class="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-gray-400 transition-colors">
-              <svg width="20" height="24" viewBox="0 0 384 512" fill="black"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 25 184.8 25 231.5c0 27.4 10.2 53.9 30.7 78.3 14.5 18.1 33.5 30.5 54.2 38.2 20.7 7.7 42.8 10.5 65.1 8.2 17.1-1.7 33.5-6.1 48.9-13.1 4.6-2.1 9.2-4.5 13.6-7.1-1.5-5.2-2.3-10.6-2.3-16.3 0-24.1 19.5-43.6 43.6-43.6 13.1 0 24.8 5.8 32.7 15 25.5-9.5 47.5-24.5 47.5-24.5l-.1-.1z"/></svg>
-            </div>
-            <span class="text-xs text-gray-500">Apple 登录</span>
-          </button>
-        </div>
-      </div>
-
-      <p class="text-[10px] text-gray-400 text-center mt-8 leading-relaxed">
-        登录即代表您同意<a href="#" class="underline">《用户协议》</a>和<a href="#" class="underline">《隐私政策》</a>
-      </p>
+    <!-- ========== 3. 首页 ========== -->
+    <div id="page-home" class="page relative w-full h-full">
+      <img src="screens/03-home.png" alt="首页" class="screen-img" loading="lazy">
+      <!-- 底部导航热区 -->
+      <button class="hotspot left-0 w-1/3 bottom-0 h-[11%]" aria-label="首页" data-go="home"></button>
+      <button class="hotspot left-1/3 w-1/3 bottom-0 h-[11%]" aria-label="训练" data-go="training"></button>
+      <button class="hotspot left-2/3 w-1/3 bottom-0 h-[11%]" aria-label="我的" data-go="profile"></button>
     </div>
 
-    <!-- ==================== 3. 首页 ==================== -->
-    <div id="page-home" class="page flex-col flex-1 overflow-hidden">
-      <!-- 顶栏 -->
-      <div class="flex items-center justify-center relative px-5 py-2 border-b border-gray-100 shrink-0">
-        <div class="absolute left-5 w-7 h-7 bg-brand-orange rounded-lg flex items-center justify-center">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>
-        </div>
-        <span class="font-bold text-base">FitTrack</span>
-      </div>
-
-      <!-- 可滚动内容 -->
-      <div class="flex-1 overflow-y-auto hide-scroll pb-20">
-        <!-- 打卡区域 -->
-        <div class="flex flex-col items-center px-6 pt-6 pb-4">
-          <!-- 进度环 -->
-          <div class="relative w-[140px] h-[140px] mb-4">
-            <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" stroke-width="6"/>
-              <circle id="home-ring" class="progress-ring" cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="6" stroke-linecap="round"/>
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <span class="text-3xl font-bold">0%</span>
-              <span class="text-xs text-gray-400 mt-0.5">今日进度</span>
-            </div>
-          </div>
-          <h2 class="text-xl font-bold mb-4">今日未打卡</h2>
-          <button id="btn-checkin" class="btn-primary w-full max-w-[280px] bg-black text-white text-sm font-medium py-3.5 rounded-xl mb-3">一键打卡</button>
-          <div class="flex items-center gap-1.5 text-xs text-brand-orange bg-orange-50 px-3 py-1.5 rounded-full">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#F97316"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7-6.3-4.6L5.7 21l2.3-7-6-4.6h7.6z"/></svg>
-            连续打卡：12 天
-          </div>
-        </div>
-
-        <!-- 数据概览 -->
-        <div class="px-5 mt-2">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-1.5">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              <span class="text-sm font-semibold">数据概览</span>
-            </div>
-            <button class="text-xs text-gray-400 hover:text-black transition-colors">详情 &gt;</button>
-          </div>
-          <div class="grid grid-cols-3 gap-2.5">
-            <!-- 训练次数 -->
-            <div class="border border-gray-100 rounded-xl p-3 text-center">
-              <div class="w-9 h-9 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16"/></svg>
-              </div>
-              <p class="text-[10px] text-gray-500 mb-0.5">训练次数</p>
-              <p class="text-sm font-bold">18 次</p>
-            </div>
-            <!-- 卡路里 -->
-            <div class="border border-gray-100 rounded-xl p-3 text-center">
-              <div class="w-9 h-9 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="#F97316"><path d="M12 23c-1.1-2.5-1-4.5-.5-6 .3-1.1 1-2 1.5-3 .5 1 .9 1.5 1.5 1.5s1-.5 1.5-1.5c.5 1 1.2 1.9 1.5 3 .5 1.5.6 3.5-.5 6-.5 1-1.5 2-2 2.5-.5-.5-1.5-1.5-2-2.5z"/><path d="M12 2C8 6 6 9 6 12c0 2 1 3.5 2 4.5" fill="none" stroke="#F97316" stroke-width="1.5"/></svg>
-              </div>
-              <p class="text-[10px] text-gray-500 mb-0.5">消耗卡路里</p>
-              <p class="text-sm font-bold">420 kcal</p>
-            </div>
-            <!-- 体重 -->
-            <div class="border border-gray-100 rounded-xl p-3 text-center">
-              <div class="w-9 h-9 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
-              </div>
-              <p class="text-[10px] text-gray-500 mb-0.5">体重趋势</p>
-              <p class="text-sm font-bold">65.2 kg</p>
-              <p class="text-[10px] text-brand-green">-0.8kg</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- 推荐训练 -->
-        <div class="px-5 mt-5 mb-4">
-          <h3 class="text-sm font-bold mb-3">今日推荐训练</h3>
-          <div class="relative rounded-2xl overflow-hidden h-[200px] group cursor-pointer">
-            <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=400&fit=crop" alt="全身燃脂训练" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            <div class="absolute top-3 left-3 flex gap-1.5">
-              <span class="text-[10px] text-white bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full">⏱ 30 分钟</span>
-              <span class="text-[10px] text-white bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full">⚡ 中级</span>
-              <span class="text-[10px] text-white bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full">🔥 320 kcal</span>
-            </div>
-            <div class="absolute bottom-3 left-3 right-3">
-              <p class="text-white font-bold text-base mb-2">30 分钟全身燃脂</p>
-              <button class="btn-primary bg-black text-white text-xs font-medium px-5 py-2 rounded-lg">开始训练</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- ========== 4. 训练页 ========== -->
+    <div id="page-training" class="page relative w-full h-full">
+      <img src="screens/04-training.png" alt="训练页" class="screen-img" loading="lazy">
+      <button class="hotspot left-0 w-1/3 bottom-0 h-[11%]" aria-label="首页" data-go="home"></button>
+      <button class="hotspot left-1/3 w-1/3 bottom-0 h-[11%]" aria-label="训练" data-go="training"></button>
+      <button class="hotspot left-2/3 w-1/3 bottom-0 h-[11%]" aria-label="我的" data-go="profile"></button>
     </div>
 
-    <!-- ==================== 4. 训练页 ==================== -->
-    <div id="page-training" class="page flex-col flex-1 overflow-hidden">
-      <!-- 顶栏 -->
-      <div class="flex items-center justify-center relative px-5 py-2 shrink-0">
-        <span class="font-bold text-base">训练</span>
-        <button class="absolute right-5 w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:border-gray-400 transition-colors">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        </button>
-      </div>
-
-      <div class="flex-1 overflow-y-auto hide-scroll pb-20 px-5">
-        <!-- 搜索 -->
-        <div class="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2.5 mb-4 focus-within:border-gray-400 transition-colors">
-          <svg class="text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="search" placeholder="搜索你的训练计划..." class="flex-1 text-sm bg-transparent placeholder:text-gray-400">
-        </div>
-
-        <!-- 分类标签 -->
-        <div class="flex gap-2 overflow-x-auto hide-scroll mb-5 pb-1" id="chip-group">
-          <button class="chip bg-black text-white text-xs px-4 py-1.5 rounded-full whitespace-nowrap" data-cat="all">全部</button>
-          <button class="chip bg-white border border-gray-200 text-gray-600 text-xs px-4 py-1.5 rounded-full whitespace-nowrap" data-cat="chest">胸部</button>
-          <button class="chip bg-white border border-gray-200 text-gray-600 text-xs px-4 py-1.5 rounded-full whitespace-nowrap" data-cat="back">背部</button>
-          <button class="chip bg-white border border-gray-200 text-gray-600 text-xs px-4 py-1.5 rounded-full whitespace-nowrap" data-cat="legs">腿部</button>
-          <button class="chip bg-white border border-gray-200 text-gray-600 text-xs px-4 py-1.5 rounded-full whitespace-nowrap" data-cat="core">核心</button>
-        </div>
-
-        <!-- 推荐训练列表 -->
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-sm font-bold">推荐训练</span>
-          <button class="text-xs text-gray-400 hover:text-black transition-colors">查看更多</button>
-        </div>
-
-        <div class="space-y-4" id="workout-list">
-          <!-- 卡片由 JS 渲染 -->
-        </div>
-
-        <!-- 进阶计划 -->
-        <div class="mt-5 mb-4 bg-gray-50 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:bg-gray-100 transition-colors">
-          <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          </div>
-          <div class="flex-1">
-            <p class="text-sm font-semibold">专业进阶计划</p>
-            <p class="text-xs text-gray-400">由资深健身教练指导</p>
-          </div>
-          <svg class="text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-      </div>
+    <!-- ========== 5. 个人中心页 ========== -->
+    <div id="page-profile" class="page relative w-full h-full">
+      <img src="screens/05-profile.png" alt="个人中心" class="screen-img" loading="lazy">
+      <!-- 底部导航 -->
+      <button class="hotspot left-0 w-1/3 bottom-0 h-[11%]" aria-label="首页" data-go="home"></button>
+      <button class="hotspot left-1/3 w-1/3 bottom-0 h-[11%]" aria-label="训练" data-go="training"></button>
+      <button class="hotspot left-2/3 w-1/3 bottom-0 h-[11%]" aria-label="我的" data-go="profile"></button>
+      <!-- 「退出登录」热区 -->
+      <button class="hotspot left-[6%] right-[6%] bottom-[13%] h-[4.5%] rounded-xl" aria-label="退出登录" data-go="login"></button>
     </div>
 
-    <!-- ==================== 5. 个人中心 ==================== -->
-    <div id="page-profile" class="page flex-col flex-1 overflow-hidden">
-      <!-- 顶栏 -->
-      <div class="flex items-center justify-center relative px-5 py-2 shrink-0">
-        <span class="font-bold text-base">个人中心</span>
-        <button class="absolute right-5 text-gray-600 hover:text-black transition-colors">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        </button>
-      </div>
-
-      <div class="flex-1 overflow-y-auto hide-scroll pb-20">
-        <!-- 用户信息 -->
-        <div class="px-5 pt-2 pb-4 bg-gradient-to-b from-gray-50 to-white">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="relative">
-              <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=100&h=100&fit=crop" alt="头像" class="w-14 h-14 rounded-full object-cover">
-              <div class="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-brand-green rounded-full border-2 border-white flex items-center justify-center">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><polyline points="20 6 9 17 4 12" stroke="white" stroke-width="3" fill="none"/></svg>
-              </div>
-            </div>
-            <div>
-              <p class="font-bold text-base">寒</p>
-              <p class="text-xs text-gray-400">加入 FitTrack 第 128 天</p>
-              <span class="inline-block mt-1 text-[10px] text-brand-orange bg-orange-50 px-2 py-0.5 rounded-full">减脂目标: 5kg</span>
-            </div>
-          </div>
-          <!-- 进度条 -->
-          <div class="bg-neutral-900 rounded-xl p-4">
-            <div class="flex justify-between text-white text-xs mb-2">
-              <span>当前进度: 3.2kg / 5kg</span>
-              <span class="font-semibold">64%</span>
-            </div>
-            <div class="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
-              <div class="h-full bg-white rounded-full transition-all duration-1000" style="width:64%"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 统计 -->
-        <div class="grid grid-cols-3 px-5 py-4 border-b border-gray-100">
-          <div class="text-center">
-            <svg class="mx-auto mb-1" width="20" height="20" viewBox="0 0 24 24" fill="#F97316"><path d="M12 23c-1.1-2.5-1-4.5-.5-6 .3-1.1 1-2 1.5-3 .5 1 .9 1.5 1.5 1.5s1-.5 1.5-1.5c.5 1 1.2 1.9 1.5 3 .5 1.5.6 3.5-.5 6-.5 1-1.5 2-2 2.5-.5-.5-1.5-1.5-2-2.5z"/></svg>
-            <p class="text-lg font-bold">12</p>
-            <p class="text-[10px] text-gray-400">连续打卡(天)</p>
-          </div>
-          <div class="text-center">
-            <svg class="mx-auto mb-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16"/></svg>
-            <p class="text-lg font-bold">86</p>
-            <p class="text-[10px] text-gray-400">总训练(次)</p>
-          </div>
-          <div class="text-center">
-            <svg class="mx-auto mb-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></svg>
-            <p class="text-lg font-bold">15</p>
-            <p class="text-[10px] text-gray-400">成就勋章(枚)</p>
-          </div>
-        </div>
-
-        <!-- 打卡日历 -->
-        <div class="mx-5 mt-4 border border-gray-100 rounded-xl p-4 shadow-card">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <span class="text-xs font-semibold">2024年3月打卡看板</span>
-            </div>
-            <span class="text-[10px] text-gray-400">已坚持 21天</span>
-          </div>
-          <div class="grid grid-cols-7 gap-1 text-center text-[10px]" id="calendar-grid">
-            <!-- JS 渲染 -->
-          </div>
-        </div>
-
-        <!-- 菜单列表 -->
-        <div class="mx-5 mt-4 border border-gray-100 rounded-xl overflow-hidden shadow-card">
-          <div class="menu-row flex items-center justify-between px-4 py-3.5 border-b border-gray-50 cursor-pointer">
-            <div class="flex items-center gap-3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="text-sm">个人资料</span></div>
-            <span class="text-xs text-gray-400">编辑信息 &gt;</span>
-          </div>
-          <div class="menu-row flex items-center justify-between px-4 py-3.5 border-b border-gray-50 cursor-pointer">
-            <div class="flex items-center gap-3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="text-sm">我的训练计划</span></div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-          <div class="menu-row flex items-center justify-between px-4 py-3.5 border-b border-gray-50 cursor-pointer">
-            <div class="flex items-center gap-3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span class="text-sm">消息中心</span></div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-          <div class="menu-row flex items-center justify-between px-4 py-3.5 border-b border-gray-50 cursor-pointer">
-            <div class="flex items-center gap-3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span class="text-sm">帮助与反馈</span></div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-          <div class="menu-row flex items-center justify-between px-4 py-3.5 cursor-pointer">
-            <div class="flex items-center gap-3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg><span class="text-sm">设置</span></div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-        </div>
-
-        <!-- 退出登录 -->
-        <button id="btn-logout" class="mx-5 mt-4 mb-6 w-[calc(100%-2.5rem)] bg-white border border-gray-200 text-red-500 text-sm py-3 rounded-xl hover:bg-red-50 active:scale-[.98] transition-all">退出登录</button>
-      </div>
-    </div>
-
-    <!-- ========== 底部导航栏（首页/训练/个人中心共用） ========== -->
-    <nav id="bottom-nav" class="hidden absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-8 py-2 pb-5 flex justify-between items-end z-10">
-      <button class="nav-item flex flex-col items-center gap-0.5 text-black" data-nav="home">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        <span class="text-[10px] font-medium">首页</span>
-      </button>
-      <button class="nav-item flex flex-col items-center gap-0.5 text-gray-400" data-nav="training">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11M6.5 17.5h11M4 12h16"/></svg>
-        <span class="text-[10px]">训练</span>
-      </button>
-      <button class="nav-item flex flex-col items-center gap-0.5 text-gray-400" data-nav="profile">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span class="text-[10px]">我的</span>
-      </button>
-    </nav>
   </div>
 
-  <!-- ========== JavaScript 交互逻辑 ========== -->
   <script>
   (function () {
     'use strict';
 
-    /* ---- 页面路由 ---- */
-    var PAGES = ['splash', 'login', 'home', 'training', 'profile'];
-    var TAB_PAGES = ['home', 'training', 'profile'];
-    var currentPage = 'splash';
+  var current = 'splash';
 
+    /** 切换页面 */
     function showPage(name) {
-      PAGES.forEach(function (p) {
-        var el = document.getElementById('page-' + p);
-        if (p === name) {
-          el.classList.add('active');
-        } else {
-          el.classList.remove('active');
-        }
-      });
-      currentPage = name;
-
-      /* 底部导航显隐 */
-      var nav = document.getElementById('bottom-nav');
-      if (TAB_PAGES.indexOf(name) >= 0) {
-        nav.classList.remove('hidden');
-        nav.classList.add('flex');
-        updateNav(name);
-      } else {
-        nav.classList.add('hidden');
-        nav.classList.remove('flex');
-      }
+      if (name === current) return;
+      document.getElementById('page-' + current).classList.remove('active');
+      document.getElementById('page-' + name).classList.add('active');
+      current = name;
     }
 
-    function updateNav(active) {
-      document.querySelectorAll('#bottom-nav [data-nav]').forEach(function (btn) {
-        var isActive = btn.dataset.nav === active;
-        btn.classList.toggle('text-black', isActive);
-        btn.classList.toggle('text-gray-400', !isActive);
-        btn.querySelector('span').classList.toggle('font-medium', isActive);
+    /* 热区点击 */
+    document.querySelectorAll('[data-go]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        showPage(btn.dataset.go);
       });
-    }
+    });
 
-    /* ---- 启动页：2.5 秒后自动跳转登录 ---- */
+    /* 启动页 2.5 秒后自动进入登录页 */
     setTimeout(function () {
-      if (currentPage === 'splash') showPage('login');
+      if (current === 'splash') showPage('login');
     }, 2500);
-    document.getElementById('page-splash').addEventListener('click', function () {
-      showPage('login');
-    });
-
-    /* ---- 登录 ---- */
-    document.getElementById('btn-login').addEventListener('click', function () {
-      showPage('home');
-    });
-
-    /* 密码可见切换 */
-    var pwdInput = document.getElementById('pwd-input');
-    var pwdToggle = document.getElementById('pwd-toggle');
-    pwdToggle.addEventListener('click', function () {
-      var isHidden = pwdInput.type === 'password';
-      pwdInput.type = isHidden ? 'text' : 'password';
-      document.getElementById('eye-off').classList.toggle('hidden', isHidden);
-      document.getElementById('eye-on').classList.toggle('hidden', !isHidden);
-    });
-
-    /* ---- 底部导航 ---- */
-    document.querySelectorAll('#bottom-nav [data-nav]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        showPage(btn.dataset.nav);
-      });
-    });
-
-    /* ---- 一键打卡 ---- */
-    document.getElementById('btn-checkin').addEventListener('click', function () {
-      var btn = this;
-      btn.textContent = '打卡成功 ✓';
-      btn.classList.replace('bg-black', 'bg-brand-green');
-      document.querySelector('#page-home h2').textContent = '今日已打卡';
-      /* 进度环动画 */
-      var ring = document.getElementById('home-ring');
-      ring.style.stroke = '#22C55E';
-      ring.style.strokeDashoffset = '0';
-      document.querySelector('#page-home .text-3xl').textContent = '100%';
-      setTimeout(function () {
-        btn.textContent = '一键打卡';
-        btn.classList.replace('bg-brand-green', 'bg-black');
-      }, 2000);
-    });
-
-    /* ---- 退出登录 ---- */
-    document.getElementById('btn-logout').addEventListener('click', function () {
-      showPage('login');
-    });
-
-    /* ---- 训练页：分类标签切换 ---- */
-    document.getElementById('chip-group').addEventListener('click', function (e) {
-      var chip = e.target.closest('.chip');
-      if (!chip) return;
-      this.querySelectorAll('.chip').forEach(function (c) {
-        c.classList.remove('bg-black', 'text-white');
-        c.classList.add('bg-white', 'border', 'border-gray-200', 'text-gray-600');
-      });
-      chip.classList.add('bg-black', 'text-white');
-      chip.classList.remove('bg-white', 'border', 'border-gray-200', 'text-gray-600');
-    });
-
-    /* ---- 训练卡片数据 ---- */
-    var WORKOUTS = [
-      { tag: '有氧', title: '30分钟全身燃脂', time: '30 min', kcal: '420 kcal', stars: 3.5,
-        img: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&h=340&fit=crop' },
-      { tag: '胸部', title: '初级胸肌塑造', time: '25 min', kcal: '280 kcal', stars: 3,
-        img: 'https://images.unsplash.com/photo-1581009146145-b5ef050c1494?w=600&h=340&fit=crop' },
-      { tag: '背部', title: '背部强化训练', time: '35 min', kcal: '350 kcal', stars: 4,
-        img: 'https://images.unsplash.com/photo-1534368950712-7639f874d1f9?w=600&h=340&fit=crop' }
-    ];
-
-    function renderStars(n) {
-      var html = '';
-      for (var i = 1; i <= 5; i++) {
-        var fill = i <= Math.floor(n) ? '#FBBF24' : (i - 0.5 <= n ? '#FBBF24' : '#E5E7EB');
-        html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="' + fill + '"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
-      }
-      return html;
-    }
-
-    var listEl = document.getElementById('workout-list');
-    WORKOUTS.forEach(function (w) {
-      listEl.innerHTML += '<article class="workout-card cursor-pointer">' +
-        '<div class="relative rounded-xl overflow-hidden mb-2.5 h-[140px]">' +
-          '<img src="' + w.img + '" alt="' + w.title + '" class="w-full h-full object-cover" loading="lazy">' +
-          '<span class="absolute bottom-2 left-2 text-[10px] text-white bg-black/60 px-2 py-0.5 rounded">' + w.tag + '</span>' +
-        '</div>' +
-        '<div class="flex items-center justify-between">' +
-          '<h4 class="text-sm font-bold">' + w.title + '</h4>' +
-          '<button class="w-8 h-8 bg-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform">' +
-            '<svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="8 5 20 12 8 19 8 5"/></svg>' +
-          '</button>' +
-        '</div>' +
-        '<div class="flex items-center gap-3 mt-1.5 text-[10px] text-gray-400">' +
-          '<span>⏱ ' + w.time + '</span>' +
-          '<span class="text-brand-orange">🔥 ' + w.kcal + '</span>' +
-          '<span class="flex gap-0.5">' + renderStars(w.stars) + '</span>' +
-        '</div>' +
-      '</article>';
-    });
-
-    /* ---- 打卡日历渲染 ---- */
-    var checkedDays = [1,2,4,5,6,7,8,10,11,12,14,15,18,19,20,21,24];
-    var weekdays = ['一','二','三','四','五','六','日'];
-    var calEl = document.getElementById('calendar-grid');
-    weekdays.forEach(function (d) {
-      calEl.innerHTML += '<div class="text-gray-400 font-medium py-1">' + d + '</div>';
-    });
-    for (var day = 1; day <= 31; day++) {
-      var isChecked = checkedDays.indexOf(day) >= 0;
-      var isToday = day === 24;
-      calEl.innerHTML += '<div class="py-1">' +
-        (isChecked
-          ? '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-green text-white font-medium' + (isToday ? ' ring-2 ring-green-300' : '') + '">' + day + '</span>'
-          : '<span class="text-gray-300">' + day + '</span>') +
-      '</div>';
-    }
-
-    /* 初始化进度环 */
-    setTimeout(function () {
-      var ring = document.getElementById('home-ring');
-      if (ring) ring.style.strokeDashoffset = '283';
-    }, 500);
 
   })();
   </script>
